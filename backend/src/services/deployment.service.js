@@ -1,5 +1,4 @@
 const DeploymentUtil = require('../utils/deployment.util');
-const { getStellarInstance } = require('./stellar.service'); // Assuming there is a stellar service
 
 class DeploymentService {
     constructor(networkProfile = 'Dev') {
