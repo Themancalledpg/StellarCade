@@ -15,6 +15,7 @@ class DeploymentService {
             const deployMap = DeploymentUtil.loadDeploymentMap(this.networkProfile);
             return deployMap.contracts;
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(`Failed to load contract registry for ${this.networkProfile}:`, err.message);
             return {};
         }
@@ -27,6 +28,7 @@ class DeploymentService {
         try {
             return DeploymentUtil.getContractAddress(contractAlias, this.networkProfile);
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(`Error resolving address for contract '${contractAlias}':`, err.message);
             throw new Error(`Contract ${contractAlias} is not properly deployed or initialized`);
         }
@@ -38,7 +40,6 @@ class DeploymentService {
     async validateNetworkSync() {
         try {
             const deployMap = DeploymentUtil.loadDeploymentMap(this.networkProfile);
-            const stellar = getStellarInstance ? getStellarInstance() : null;
 
             // Perform integrity checks between deployment output and actual network constants if applicable
             return {
