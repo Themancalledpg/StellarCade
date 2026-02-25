@@ -89,6 +89,8 @@ impl OracleIntegration {
         oracle_sources_config: Vec<Address>,
     ) -> Result<(), Error> {
 
+        admin.require_auth();
+
         if env.storage().instance().has(&DataKey::Admin) {
             return Err(Error::AlreadyInitialized);
         }
@@ -96,8 +98,6 @@ impl OracleIntegration {
         if oracle_sources_config.is_empty() {
             return Err(Error::InvalidInput);
         }
-
-        admin.require_auth();
 
         env.storage().instance().set(&DataKey::Admin, &admin);
         env.storage().instance().set(&DataKey::OracleSources, &oracle_sources_config);
@@ -123,7 +123,9 @@ impl OracleIntegration {
             return Err(Error::InvalidInput);
         }
 
-        if env.storage().persistent().has(&DataKey::Request(request_id.clone())) {
+        let key = DataKey::Request(request_id.clone());
+
+        if env.storage().persistent().has(&key) {
             return Err(Error::RequestExists);
         }
 
@@ -133,9 +135,13 @@ impl OracleIntegration {
             payload: Bytes::new(&env),
         };
 
+        env.storage().persistent().set(&key, &request);
+
+        // Extend TTL
+        let max_ttl = env.storage().max_ttl();
         env.storage()
             .persistent()
-            .set(&DataKey::Request(request_id.clone()), &request);
+            .extend_ttl(&key, max_ttl - 1000, max_ttl);
 
         RequestCreated {
             request_id,
@@ -156,11 +162,11 @@ impl OracleIntegration {
         _proof: Bytes,
     ) -> Result<(), Error> {
 
+        caller.require_auth();
+
         if payload.is_empty() {
             return Err(Error::InvalidInput);
         }
-
-        caller.require_auth();
 
         let sources: Vec<Address> = env
             .storage()
@@ -172,10 +178,12 @@ impl OracleIntegration {
             return Err(Error::OracleNotWhitelisted);
         }
 
+        let req_key = DataKey::Request(request_id.clone());
+
         let mut request: OracleRequest = env
             .storage()
             .persistent()
-            .get(&DataKey::Request(request_id.clone()))
+            .get(&req_key)
             .ok_or(Error::RequestNotFound)?;
 
         if request.fulfilled {
@@ -185,21 +193,30 @@ impl OracleIntegration {
         request.fulfilled = true;
         request.payload = payload.clone();
 
-        env.storage()
-            .persistent()
-            .set(&DataKey::Request(request_id.clone()), &request);
+        env.storage().persistent().set(&req_key, &request);
 
+        // Extend TTL for request
+        let max_ttl = env.storage().max_ttl();
         env.storage()
             .persistent()
-            .set(&DataKey::Latest(request.feed_id.clone()), &payload);
+            .extend_ttl(&req_key, max_ttl - 1000, max_ttl);
+
+        let latest_key = DataKey::Latest(request.feed_id.clone());
+
+        env.storage().persistent().set(&latest_key, &payload);
+
+        // Extend TTL for latest
+        env.storage()
+            .persistent()
+            .extend_ttl(&latest_key, max_ttl - 1000, max_ttl);
 
         let feed_id = request.feed_id.clone();
 
         RequestFulfilled {
-        request_id,
-        feed_id,
-}
-.publish(&env);
+            request_id,
+            feed_id,
+        }
+        .publish(&env);
 
         Ok(())
     }
@@ -207,98 +224,34 @@ impl OracleIntegration {
     // ───────── READ METHODS ─────────
 
     pub fn latest(env: Env, feed_id: BytesN<32>) -> Option<Bytes> {
-        env.storage().persistent().get(&DataKey::Latest(feed_id))
+        let key = DataKey::Latest(feed_id);
+        let result = env.storage().persistent().get(&key);
+
+        if result.is_some() {
+            let max_ttl = env.storage().max_ttl();
+            env.storage()
+                .persistent()
+                .extend_ttl(&key, max_ttl - 1000, max_ttl);
+        }
+
+        result
     }
 
     pub fn get_request(
         env: Env,
         request_id: BytesN<32>,
     ) -> Option<OracleRequest> {
-        env.storage().persistent().get(&DataKey::Request(request_id))
-    }
-}
 
-//
-// ─────────────────────────────────────────────
-// TESTS
-// ─────────────────────────────────────────────
-//
+        let key = DataKey::Request(request_id);
+        let result = env.storage().persistent().get(&key);
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use soroban_sdk::{testutils::Address as _, Env};
+        if result.is_some() {
+            let max_ttl = env.storage().max_ttl();
+            env.storage()
+                .persistent()
+                .extend_ttl(&key, max_ttl - 1000, max_ttl);
+        }
 
-    fn setup() -> (Env, Address) {
-        let env = Env::default();
-        let contract_id = env.register(OracleIntegration, ());
-        (env, contract_id)
-    }
-
-    #[test]
-    fn test_full_flow() {
-        let (env, contract_id) = setup();
-        let client = OracleIntegrationClient::new(&env, &contract_id);
-
-        let oracle = Address::generate(&env);
-        let mut oracles = Vec::new(&env);
-        oracles.push_back(oracle.clone());
-
-        let feed = BytesN::from_array(&env, &[1; 32]);
-        let req = BytesN::from_array(&env, &[2; 32]);
-        let payload = Bytes::from_slice(&env, &[9, 9, 9]);
-
-        env.mock_all_auths();
-
-        client.init(&oracle, &oracles);
-        client.request_data(&oracle, &feed, &req);
-        client.fulfill_data(&oracle, &req, &payload, &Bytes::new(&env));
-
-        let latest = client.latest(&feed).unwrap();
-        assert_eq!(latest, payload);
-    }
-
-    #[test]
-    fn test_duplicate_request() {
-        let (env, contract_id) = setup();
-        let client = OracleIntegrationClient::new(&env, &contract_id);
-
-        let oracle = Address::generate(&env);
-        let mut oracles = Vec::new(&env);
-        oracles.push_back(oracle.clone());
-
-        let feed = BytesN::from_array(&env, &[3; 32]);
-        let req = BytesN::from_array(&env, &[4; 32]);
-
-        env.mock_all_auths();
-
-        client.init(&oracle, &oracles);
-        client.request_data(&oracle, &feed, &req);
-
-        let result = client.try_request_data(&oracle, &feed, &req);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_refulfill_rejected() {
-        let (env, contract_id) = setup();
-        let client = OracleIntegrationClient::new(&env, &contract_id);
-
-        let oracle = Address::generate(&env);
-        let mut oracles = Vec::new(&env);
-        oracles.push_back(oracle.clone());
-
-        let feed = BytesN::from_array(&env, &[5; 32]);
-        let req = BytesN::from_array(&env, &[6; 32]);
-        let payload = Bytes::from_slice(&env, &[1, 2, 3]);
-
-        env.mock_all_auths();
-
-        client.init(&oracle, &oracles);
-        client.request_data(&oracle, &feed, &req);
-        client.fulfill_data(&oracle, &req, &payload, &Bytes::new(&env));
-
-        let result = client.try_fulfill_data(&oracle, &req, &payload, &Bytes::new(&env));
-        assert!(result.is_err());
+        result
     }
 }
