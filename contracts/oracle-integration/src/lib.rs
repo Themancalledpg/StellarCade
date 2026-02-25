@@ -148,7 +148,7 @@ impl OracleIntegration {
 
     // ───────── REQUEST DATA ─────────
 
-    pub fn request_data(
+pub fn request_data(
     env: Env,
     caller: Address,
     feed_id: BytesN<32>,
@@ -156,6 +156,11 @@ impl OracleIntegration {
 ) -> Result<(), Error> {
 
     caller.require_auth();
+
+    // 🔒 Ensure contract is initialized
+    if !env.storage().instance().has(&DataKey::Admin) {
+        return Err(Error::NotAuthorized);
+    }
 
     renew_instance_ttl(&env)?;
 
