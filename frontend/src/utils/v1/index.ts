@@ -11,3 +11,4 @@ export * from "./useAsyncAction";
 export * from "./useNetworkGuard";
 export * from "./usePaginatedQuery";
 export * from "./validation";
+export * from "./errorMapper";
