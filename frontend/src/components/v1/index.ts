@@ -32,5 +32,7 @@ export type {
   ToolbarActionIntent
 } from './ActionToolbar';
 
+export { ContractEventFeed, default as ContractEventFeedDefault } from './ContractEventFeed';
+export type { ContractEventFeedProps } from './ContractEventFeed';
 export { PaginatedListController } from './PaginatedListController';
 export type { PaginatedListControllerProps } from './PaginatedListController';
