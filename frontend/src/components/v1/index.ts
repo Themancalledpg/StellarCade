@@ -31,3 +31,6 @@ export type {
   ToolbarAction,
   ToolbarActionIntent
 } from './ActionToolbar';
+
+export { PaginatedListController } from './PaginatedListController';
+export type { PaginatedListControllerProps } from './PaginatedListController';
