@@ -20,7 +20,7 @@ pub fn current_epoch(env: Env) -> u64
 Schedule a task for a future or current epoch.
 
 ```rust
-pub fn schedule_task( env: Env, task_id: Symbol, epoch: u64, payload_hash: BytesN<32>, ) -> Result<(), Error>
+pub fn schedule_task(env: Env, task_id: Symbol, epoch: u64, payload_hash: BytesN<32>) -> Result<(), Error>
 ```
 
 ### `mark_executed`

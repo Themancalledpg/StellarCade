@@ -183,7 +183,10 @@ impl DocGenerator {
                     .replace('{', "")
                     .split_whitespace()
                     .collect::<Vec<_>>()
-                    .join(" ");
+                    .join(" ")
+                    .replace("( ", "(")
+                    .replace(", )", ")")
+                    .replace(" )", ")");
 
                 if let Some(cap) = name_regex.captures(&normalized_signature) {
                     doc.methods.push(MethodDoc {
@@ -357,7 +360,7 @@ impl PrizePool {
         assert_eq!(doc.methods[0].name, "release");
         assert_eq!(
             doc.methods[0].signature,
-            "pub fn release( env: Env, admin: Address, game_id: u64, amount: i128, ) -> Result<(), Error>"
+            "pub fn release(env: Env, admin: Address, game_id: u64, amount: i128) -> Result<(), Error>"
         );
     }
 }

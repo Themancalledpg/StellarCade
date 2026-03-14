@@ -4,17 +4,17 @@
 
 ### `init`
 ```rust
-pub fn init( env: Env, admin: Address, prize_pool_contract: Address, balance_contract: Address, ) -> Result<(), Error>
+pub fn init(env: Env, admin: Address, prize_pool_contract: Address, balance_contract: Address) -> Result<(), Error>
 ```
 
 ### `open_round`
 ```rust
-pub fn open_round( env: Env, round_id: u64, answer_commitment: BytesN<32>, reward_amount: i128, ) -> Result<(), Error>
+pub fn open_round(env: Env, round_id: u64, answer_commitment: BytesN<32>, reward_amount: i128) -> Result<(), Error>
 ```
 
 ### `submit_answer`
 ```rust
-pub fn submit_answer( env: Env, player: Address, round_id: u64, answer_payload: Bytes, ) -> Result<(), Error>
+pub fn submit_answer(env: Env, player: Address, round_id: u64, answer_payload: Bytes) -> Result<(), Error>
 ```
 
 ### `close_round`
