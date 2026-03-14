@@ -1,0 +1,39 @@
+# penalty-slashing
+
+## Public Methods
+
+### `init`
+Initialize with admin and treasury contract/address holding slashed funds.
+
+```rust
+pub fn init(env: Env, admin: Address, treasury_contract: Address)
+```
+
+### `define_violation`
+Define or update a violation rule. Admin-only.
+
+```rust
+pub fn define_violation(
+```
+
+### `apply_penalty`
+Apply a penalty to an account. Admin-only. Slashes tokens from `account` and transfers them to the treasury.
+
+```rust
+pub fn apply_penalty(
+```
+
+### `appeal_penalty`
+File an appeal for a penalty. Only the penalized account may appeal.
+
+```rust
+pub fn appeal_penalty(env: Env, penalty_id: u64)
+```
+
+### `penalty_state`
+Read current state of a penalty record.
+
+```rust
+pub fn penalty_state(env: Env, penalty_id: u64) -> PenaltyRecord
+```
+

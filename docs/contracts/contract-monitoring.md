@@ -1,17 +1,29 @@
-# Contract Monitoring
+# contract-monitoring
 
-The Contract Monitoring module tracks contract event ingestion and exposes health flags for backend dashboards.
+## Public Methods
 
-## Health Flags
+### `init`
+```rust
+pub fn init(env: Env, admin: Address) -> Result<(), Error>
+```
 
-- `failed_settlement_alert` when failed settlements reach threshold.
-- `high_error_rate` when error ratio crosses threshold.
-- `paused` when the system is paused.
+### `ingest_event`
+```rust
+pub fn ingest_event(env: Env, admin: Address, event_id: u64, kind: EventKind) -> Result<Metrics, Error>
+```
 
-## Metrics
+### `set_paused`
+```rust
+pub fn set_paused(env: Env, admin: Address, paused: bool) -> Result<(), Error>
+```
 
-- `total_events`
-- `settlement_success`
-- `settlement_failed`
-- `error_events`
-- `paused_events`
+### `get_metrics`
+```rust
+pub fn get_metrics(env: Env) -> Metrics
+```
+
+### `get_health`
+```rust
+pub fn get_health(env: Env) -> HealthSnapshot
+```
+

@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::env;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    
+    let _args: Vec<String> = env::args().collect();
+
     let current_dir = env::current_dir().unwrap_or_default();
     let is_in_pkg = current_dir.to_str().map(|s| s.contains("contract-doc-generator")).unwrap_or(false);
 

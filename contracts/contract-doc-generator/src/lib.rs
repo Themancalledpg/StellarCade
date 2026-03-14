@@ -1,9 +1,7 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
 
 // ---------------------------------------------------------------------------
 // Types & State
@@ -72,7 +70,8 @@ impl DocGenerator {
         self.state = GeneratorState::Discovery;
         println!("EVENT: Starting contract discovery in {:?}", self.base_path);
         
-        let contracts = self.discover_contracts()?;
+        let mut contracts = self.discover_contracts()?;
+        contracts.sort();
         
         self.state = GeneratorState::Parsing;
         println!("EVENT: Parsing {} contracts", contracts.len());
@@ -203,10 +202,12 @@ impl DocGenerator {
         Ok(doc)
     }
 
-    fn write_docs(&self, docs: Vec<ContractDoc>) -> Result<(), String> {
+    fn write_docs(&self, mut docs: Vec<ContractDoc>) -> Result<(), String> {
         if !self.output_path.exists() {
             fs::create_dir_all(&self.output_path).map_err(|e| e.to_string())?;
         }
+
+        docs.sort_by(|a, b| a.name.cmp(&b.name));
 
         let mut index_content = String::from("# StellarCade Contracts Reference\n\n");
         index_content.push_str("Automatic generated documentation for Soroban contracts.\n\n");

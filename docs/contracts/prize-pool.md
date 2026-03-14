@@ -22,14 +22,14 @@ pub fn fund(env: Env, from: Address, amount: i128) -> Result<(), Error>
 Earmark `amount` tokens from the available pool for a specific game.  Moves `amount` from `available` into a `Reservation(game_id)` entry. Calling reserve with a `game_id` that already has a reservation returns `GameAlreadyReserved` — this is the idempotency guard preventing a buggy game contract from double-drawing from the pool.
 
 ```rust
-pub fn reserve(
+pub fn reserve(env: Env, admin: Address, game_id: u64, amount: i128) -> Result<(), Error>
 ```
 
 ### `release`
 Return `amount` from a game's reservation back to the available pool.  Used when a game ends with leftover funds (e.g., no winner, partial payout remainder, or game cancelled). A partial release (`amount < remaining`) is valid. When `remaining` reaches zero the reservation entry is removed to avoid stale storage.
 
 ```rust
-pub fn release(
+pub fn release(env: Env, admin: Address, game_id: u64, amount: i128) -> Result<(), Error>
 ```
 
 ### `payout`

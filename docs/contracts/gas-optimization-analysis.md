@@ -1,18 +1,29 @@
-# Gas Optimization Analysis
+# gas-optimization-analysis
 
-Gas Optimization Analysis captures contract execution samples and provides hotspot and recommendation outputs.
+## Public Methods
 
-## Inputs
+### `init`
+```rust
+pub fn init(env: Env, admin: Address) -> Result<(), Error>
+```
 
-- method name
-- CPU usage
-- storage read bytes
-- storage write bytes
+### `record_sample`
+```rust
+pub fn record_sample(
+```
 
-## Outputs
+### `get_method_profile`
+```rust
+pub fn get_method_profile(env: Env, method: Symbol) -> MethodProfile
+```
 
-- aggregate method profiles
-- hotspot ranking scores
-- estimated optimization recommendations
+### `get_hotspots`
+```rust
+pub fn get_hotspots(env: Env, limit: u32) -> Vec<MethodHotspot>
+```
 
-These outputs can be exported by CI and attached as build artifacts.
+### `get_recommendations`
+```rust
+pub fn get_recommendations(env: Env, limit: u32) -> Vec<OptimizationRecommendation>
+```
+
