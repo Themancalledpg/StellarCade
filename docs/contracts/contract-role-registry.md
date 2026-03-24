@@ -65,34 +65,6 @@ pub fn has_role(env: Env, target: Address, role: Symbol) -> bool
 
 `bool`
 
-### `bulk_assign_role`
-Assigns multiple roles in bulk. Requires admin authorization.
-
-```rust
-pub fn bulk_assign_role(env: Env, assignments: Vec<(Address, Symbol)>)
-```
-
-#### Parameters
-
-| Name | Type |
-|------|------|
-| `env` | `Env` |
-| `assignments` | `Vec<(Address, Symbol)>` |
-
-### `bulk_revoke_role`
-Revokes multiple roles in bulk. Requires admin authorization.
-
-```rust
-pub fn bulk_revoke_role(env: Env, revocations: Vec<(Address, Symbol)>)
-```
-
-#### Parameters
-
-| Name | Type |
-|------|------|
-| `env` | `Env` |
-| `revocations` | `Vec<(Address, Symbol)>` |
-
 ### `get_admin`
 Retrieves the current admin address.
 
@@ -109,4 +81,32 @@ pub fn get_admin(env: Env) -> Address
 #### Return Type
 
 `Address`
+
+### `bulk_assign_role`
+Assigns multiple roles in bulk. Requires admin authorization.
+
+```rust
+pub fn bulk_assign_role(env: Env, assignments: Vec<(Address, Symbol)>)
+```
+
+#### Parameters
+
+| Name | Type |
+|------|------|
+| `env` | `Env` |
+| `assignments` | `Vec<(Address` |
+
+### `bulk_revoke_role`
+Revokes multiple roles in bulk. Requires admin authorization.
+
+```rust
+pub fn bulk_revoke_role(env: Env, revocations: Vec<(Address, Symbol)>)
+```
+
+#### Parameters
+
+| Name | Type |
+|------|------|
+| `env` | `Env` |
+| `revocations` | `Vec<(Address` |
 
